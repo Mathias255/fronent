@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#193329">
+  <meta name="description" content="Descubre lugares turísticos, hospedajes y gastronomía de Ecuador.">
+  <title>Descubrir Ecuador — Senderos</title>
+  <link rel="stylesheet" href="/secciones.css">
+</head>
+<body data-page="places">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Senderos, ir al inicio">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 42 42" fill="none"><path d="M5 31.5 16.4 12l6.3 10.1 4.1-6.3L37 31.5H5Z" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"></path><path d="m13.3 31.5 7.3-11.2 7.1 11.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg></span>
+      <span class="brand-copy"><strong>senderos</strong><small>ECUADOR · A TU RITMO</small></span>
+    </a>
+    <nav class="navigation" aria-label="Navegación">
+      <a href="/">Inicio</a><a href="/descubrir.html" aria-current="page">Descubrir</a><a href="/senderos.html">Senderos</a><a href="/guias.html">Guías y equipo</a><a href="/mapa.html">Mapa</a>
+    </nav>
+    <a class="header-back" href="/">← Inicio</a>
+  </header>
+  <main>
+    <section class="page-hero" style="--hero-image: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1900&q=85')">
+      <div class="page-hero-content"><div class="eyebrow">DESTINOS · HOSPEDAJE · GASTRONOMÍA</div><h1>Un país pequeño.<br><em>Un mundo por descubrir.</em></h1><p>Explora lagunas, volcanes, parques y pueblos del Ecuador. Encuentra dónde quedarte, qué probar y cómo llegar a cada lugar.</p></div>
+    </section>
+    <section class="page-content">
+      <div class="content-intro"><div><div class="eyebrow">ELIGE TU PRÓXIMA PARADA</div><h2>Hay un lugar esperándote.</h2></div><p>Filtra por categoría, provincia o dificultad; ordena los resultados y consulta los datos publicados de cada destino.</p></div>
+      <div class="toolbar">
+        <div class="filters" role="group" aria-label="Filtrar lugares"><button class="filter active" data-filter="all">Todos</button><button class="filter" data-filter="sitio_turistico">Naturaleza</button><button class="filter" data-filter="hotel">Hospedaje</button><button class="filter" data-filter="restaurante">Gastronomía</button></div>
+        <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="search" type="search" placeholder="Busca un lugar o una ciudad…" aria-label="Buscar"></label>
+      </div>
+      <div class="catalog-options">
+        <label>Provincia<select id="province-filter"><option value="all">Todas las provincias</option></select></label>
+        <label>Dificultad<select id="difficulty-filter"><option value="all">Todas</option><option value="easy">Fácil</option><option value="moderate">Moderada</option><option value="hard">Difícil</option></select></label>
+        <label>Ordenar<select id="sort"><option value="recent">Más recientes</option><option value="name">Nombre A–Z</option><option value="price">Precio menor</option></select></label>
+      </div>
+      <div class="place-grid" id="place-grid" aria-live="polite"></div>
+      <p class="status" id="status" role="status">Cargando lugares…</p>
+    </section>
+  </main>
+  <dialog class="place-dialog" id="place-dialog" aria-labelledby="dialog-name">
+    <button class="dialog-close" id="dialog-close" type="button" aria-label="Cerrar detalles">×</button>
+    <img id="dialog-image" alt="" hidden>
+    <span class="eyebrow" id="dialog-category"></span>
+    <h2 id="dialog-name"></h2>
+    <p id="dialog-description"></p>
+    <dl>
+      <div><dt>Ubicación</dt><dd id="dialog-address"></dd></div>
+      <div><dt>Provincia</dt><dd id="dialog-province"></dd></div>
+      <div><dt>Dificultad</dt><dd id="dialog-difficulty"></dd></div>
+      <div><dt>Duración</dt><dd id="dialog-duration"></dd></div>
+      <div><dt>Precio</dt><dd id="dialog-price"></dd></div>
+    </dl>
+    <a class="small-link primary" id="dialog-map" href="/mapa.html">Ver ubicación en el mapa ↗</a>
+  </dialog>
+  <footer class="page-footer"><span>Senderos Ecuador · Explora a tu ritmo.</span><a href="/mapa.html">Abrir el mapa completo ↗</a></footer>
+  <script src="/secciones.js" defer></script>
+</body>
+</html>

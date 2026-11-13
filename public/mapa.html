@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#193329">
+  <meta name="description" content="Explora en el mapa los lugares turísticos, hospedajes y restaurantes de Ecuador.">
+  <title>Mapa de lugares — Senderos Ecuador</title>
+  <link rel="preconnect" href="https://tile.openstreetmap.org">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1d2924;
+      --muted: #78827b;
+      --paper: #f7f6f1;
+      --white: #fffefa;
+      --line: #e6e5dc;
+      --forest: #264537;
+      --forest-dark: #193329;
+      --olive: #708666;
+      --ochre: #bd8a56;
+      font-family: 'Avenir Next', Avenir, 'Segoe UI', sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    * { box-sizing: border-box; }
+    body { min-width: 320px; min-height: 100vh; margin: 0; background: var(--paper); color: var(--ink); }
+    button, input { font: inherit; }
+    a { color: inherit; }
+    .topbar { display: flex; min-height: 75px; align-items: center; justify-content: space-between; padding: 0 max(5.5vw, 22px); border-bottom: 1px solid var(--line); background: var(--white); }
+    .brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; }
+    .brand-mark { width: 38px; height: 38px; color: var(--forest); }
+    .brand-mark svg { width: 100%; }
+    .brand-copy { display: flex; flex-direction: column; gap: 2px; }
+    .brand-copy strong { font-family: Georgia, 'Times New Roman', serif; font-size: 22px; font-weight: 600; letter-spacing: -.7px; line-height: 1; }
+    .brand-copy small { color: #788078; font-size: 7px; font-weight: 700; letter-spacing: 1.5px; }
+    .topbar-link { padding: 9px 0; color: var(--forest); font-size: 11px; font-weight: 700; text-decoration: none; }
+    .topbar-link:hover { color: var(--ochre); }
+    .intro { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 34px max(5.5vw, 22px) 25px; }
+    .eyebrow { display: flex; align-items: center; gap: 8px; color: #7d8b7c; font-size: 9px; font-weight: 750; letter-spacing: 1.55px; }
+    .eyebrow::before { width: 6px; height: 6px; border-radius: 50%; background: var(--ochre); content: ''; }
+    h1 { margin: 13px 0 7px; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(32px, 4vw, 46px); font-weight: 400; letter-spacing: -1.5px; line-height: 1.08; }
+    h1 em { color: #73836e; font-weight: 400; }
+    .intro p { max-width: 390px; margin: 0 0 5px; color: var(--muted); font-size: 11px; line-height: 1.8; }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 0 max(5.5vw, 22px) 15px; }
+    .filters { display: flex; flex-wrap: wrap; gap: 7px; }
+    .filter { min-height: 32px; padding: 0 13px; border: 1px solid #dfe3da; background: transparent; color: #778177; font-size: 9px; cursor: pointer; }
+    .filter:hover, .filter.active { border-color: var(--forest); background: var(--forest); color: white; }
+    .search { display: flex; width: min(270px, 37vw); height: 36px; align-items: center; gap: 8px; padding: 0 10px; border: 1px solid var(--line); background: var(--white); }
+    .search svg { width: 15px; flex: 0 0 15px; fill: none; stroke: #849087; stroke-width: 1.5; }
+    .search input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 10px; }
+    .province-filter { min-height: 34px; padding: 0 10px; border: 1px solid var(--line); background: var(--white); color: var(--forest); font-size: 9px; }
+    .route-panel { margin: 0 max(5.5vw, 22px) 15px; padding: 14px 16px; border: 1px solid var(--line); background: var(--white); }
+    .route-title { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+    .route-title strong { font-family: Georgia, 'Times New Roman', serif; font-size: 17px; font-weight: 500; }
+    .route-title span { color: #899188; font-size: 9px; }
+    .route-inputs { display: grid; grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1fr) auto; align-items: end; gap: 9px; }
+    .route-field { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
+    .route-field > span { color: #647066; font-size: 8px; font-weight: 700; }
+    .route-field input, .route-field select { width: 100%; height: 37px; padding: 0 10px; border: 1px solid #e6e8e0; border-radius: 0; outline: 0; background: #fcfcf9; color: var(--ink); font-size: 10px; }
+    .route-field input:focus, .route-field select:focus { border-color: #849783; }
+    .locate { height: 37px; padding: 0 9px; border: 1px solid #dfe3da; background: transparent; color: var(--forest); font-size: 9px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .locate:hover { border-color: var(--forest); background: #f1f3ed; }
+    .swap-hint { align-self: end; padding-bottom: 10px; color: #91998f; font-size: 15px; text-align: center; }
+    .route-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 11px; }
+    .modes { display: flex; flex-wrap: wrap; gap: 6px; }
+    .mode { min-height: 31px; padding: 0 11px; border: 1px solid #e2e5dd; background: transparent; color: #778177; font-size: 9px; cursor: pointer; }
+    .mode.active, .mode:hover { border-color: var(--forest); background: var(--forest); color: white; }
+    .route-submit { min-height: 35px; padding: 0 14px; border: 0; background: var(--forest); color: #fff; font-size: 9px; font-weight: 700; cursor: pointer; }
+    .route-submit:hover { background: var(--forest-dark); }
+    .route-submit:disabled { cursor: wait; opacity: .65; }
+    .route-disclosure { margin: 9px 0 0; color: #939b92; font-size: 8px; line-height: 1.6; }
+    .route-result { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 11px; padding: 11px 12px; border-left: 3px solid var(--olive); background: #f1f3ed; }
+    .route-result[hidden] { display: none; }
+    .route-metrics { display: flex; flex-wrap: wrap; gap: 15px; }
+    .route-metric { display: flex; flex-direction: column; gap: 3px; }
+    .route-metric strong { color: var(--forest); font-family: Georgia, 'Times New Roman', serif; font-size: 16px; font-weight: 500; }
+    .route-metric span, .route-provider { color: #818a81; font-size: 8px; }
+    .route-link { color: var(--forest); font-size: 9px; font-weight: 700; text-decoration: none; }
+    .route-link:hover { color: var(--ochre); }
+    .route-error { margin: 9px 0 0; color: #a34a3d; font-size: 9px; line-height: 1.6; }
+    .workspace { display: grid; min-height: min(68vh, 700px); grid-template-columns: minmax(0, 1fr) 325px; gap: 16px; padding: 0 max(5.5vw, 22px) 32px; }
+    .map-wrap { position: relative; min-height: 520px; overflow: hidden; border: 1px solid #dce1d7; background: #dce4d9; }
+    #map { position: absolute; inset: 0; background: #dce4d9; }
+    .map-badge { position: absolute; z-index: 500; top: 14px; left: 14px; display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: rgb(255 254 250 / 96%); color: var(--forest); font-size: 8px; font-weight: 750; letter-spacing: 1px; pointer-events: none; }
+    .map-dot { width: 6px; height: 6px; border-radius: 50%; background: #799977; box-shadow: 0 0 0 3px #dce7dc; }
+    .map-credit { position: absolute; z-index: 500; right: 6px; bottom: 4px; padding: 2px 4px; background: rgb(255 255 255 / 78%); color: #58625d; font-size: 8px; pointer-events: none; }
+    .sidebar { display: flex; min-height: 520px; flex-direction: column; border: 1px solid var(--line); background: var(--white); }
+    .sidebar-heading { display: flex; align-items: center; justify-content: space-between; padding: 17px 17px 13px; border-bottom: 1px solid #edede6; }
+    .sidebar-heading strong { font-family: Georgia, 'Times New Roman', serif; font-size: 18px; font-weight: 500; }
+    .count { color: #8d968b; font-size: 9px; }
+    .places-list { flex: 1; overflow: auto; }
+    .place-card { display: grid; width: 100%; grid-template-columns: 48px minmax(0, 1fr) 18px; align-items: start; gap: 10px; padding: 14px 15px; border: 0; border-bottom: 1px solid #efefe9; background: transparent; text-align: left; cursor: pointer; transition: background .16s ease; }
+    .place-card:hover, .place-card.selected { background: #f1f3ed; }
+    .place-card.selected { box-shadow: inset 3px 0 var(--ochre); }
+    .place-symbol { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; background: #e9eee5; color: var(--forest); font-size: 15px; }
+    .place-thumbnail { width: 48px; height: 48px; object-fit: cover; background: #e8eee6; }
+    .place-card[data-category="hotel"] .place-symbol { background: #f0e9df; color: #99724a; }
+    .place-card[data-category="restaurante"] .place-symbol { background: #efe7e4; color: #a0644d; }
+    .place-copy { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+    .place-copy strong { overflow: hidden; font-family: Georgia, 'Times New Roman', serif; font-size: 14px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+    .place-copy small { overflow: hidden; color: #899188; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+    .place-category { color: #9a8b76; font-size: 8px; }
+    .place-arrow { align-self: center; color: #8d978b; font-size: 13px; }
+    .empty { padding: 25px 16px; color: #899188; font-size: 10px; line-height: 1.7; text-align: center; }
+    .status { min-height: 28px; padding: 8px max(5.5vw, 22px) 13px; color: #8b9488; font-size: 9px; }
+    .leaflet-container { font: inherit; }
+    .leaflet-control-zoom a { color: var(--forest) !important; }
+    .leaflet-popup-content-wrapper { border-radius: 2px; }
+    .leaflet-popup-content { margin: 11px 15px; font-family: inherit; }
+    .popup-title { margin-bottom: 4px; font-family: Georgia, 'Times New Roman', serif; font-size: 16px; }
+    .popup-subtitle { color: #7f887e; font-size: 10px; }
+    .popup-image { width: 190px; height: 105px; margin: 0 0 8px; object-fit: cover; }
+    .popup-details { display: inline-block; margin-top: 8px; color: var(--forest); font-size: 10px; font-weight: 700; }
+    .pin-shell { display: grid; width: 32px !important; height: 38px !important; place-items: start center; border: 0; background: transparent; }
+    .pin { display: grid; width: 30px; height: 30px; place-items: center; border: 3px solid white; border-radius: 50% 50% 50% 0; background: #708666; box-shadow: 0 2px 8px rgb(31 47 35 / 35%); color: #fff; font-family: 'Segoe UI Symbol', sans-serif; font-size: 13px; transform: rotate(-45deg); }
+    .pin span { transform: rotate(45deg); }
+    .pin.hotel { background: #a77c4f; }
+    .pin.restaurante { background: #a36854; }
+    .footer { padding: 17px max(5.5vw, 22px); border-top: 1px solid var(--line); color: #90978f; font-size: 9px; }
+
+    @media (max-width: 850px) {
+      .workspace { grid-template-columns: minmax(0, 1fr) 280px; gap: 11px; }
+      .intro p { max-width: 290px; }
+    }
+    @media (max-width: 680px) {
+      .topbar { min-height: 66px; }
+      .intro { align-items: flex-start; flex-direction: column; gap: 8px; padding-top: 27px; padding-bottom: 18px; }
+      .intro p { max-width: 480px; }
+      .toolbar { align-items: stretch; flex-direction: column-reverse; gap: 10px; }
+      .search { width: 100%; }
+      .route-panel { margin-right: max(5.5vw, 22px); margin-left: max(5.5vw, 22px); padding: 12px; }
+      .route-inputs { grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr); gap: 6px; }
+      .route-inputs .locate { grid-column: 1/-1; }
+      .route-inputs .route-destination { grid-column: 1/-1; }
+      .swap-hint { display: none; }
+      .route-controls { align-items: stretch; flex-direction: column; }
+      .route-submit { width: 100%; }
+      .route-result { align-items: flex-start; flex-direction: column; }
+      .filters { gap: 6px; }
+      .filter { min-height: 30px; padding: 0 10px; font-size: 8px; }
+      .workspace { min-height: 0; grid-template-columns: 1fr; gap: 11px; }
+      .map-wrap { min-height: 54vh; }
+      .sidebar { min-height: 230px; max-height: 340px; }
+      .places-list { overflow: auto; }
+      .place-card { padding: 11px 13px; }
+      .status { padding-top: 7px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Senderos, volver al inicio">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 42 42" fill="none">
+          <path d="M5 31.5 16.4 12l6.3 10.1 4.1-6.3L37 31.5H5Z" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"></path>
+          <path d="m13.3 31.5 7.3-11.2 7.1 11.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+        </svg>
+      </span>
+      <span class="brand-copy"><strong>senderos</strong><small>ECUADOR · A TU RITMO</small></span>
+    </a>
+    <a class="topbar-link" href="/">← Volver al inicio</a>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div>
+        <div class="eyebrow">EXPLORA ECUADOR, LUGAR POR LUGAR</div>
+        <h1>Tu próximo camino<br><em>empieza en el mapa.</em></h1>
+      </div>
+      <p>Encuentra cada sitio, hospedaje y restaurante en su propio lugar. Selecciona un punto para acercarte y conocer más.</p>
+    </section>
+
+    <section class="toolbar" aria-label="Filtros del mapa">
+      <div class="filters" role="group" aria-label="Filtrar por categoría">
+        <button class="filter active" type="button" data-filter="all">Todos</button>
+        <button class="filter" type="button" data-filter="sitio_turistico">Naturaleza</button>
+        <button class="filter" type="button" data-filter="hotel">Hospedaje</button>
+        <button class="filter" type="button" data-filter="restaurante">Gastronomía</button>
+      </div>
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg>
+        <input id="search" type="search" placeholder="Busca un lugar o una ciudad…" aria-label="Buscar un lugar o una ciudad">
+      </label>
+      <label class="visually-hidden" for="province-filter">Filtrar por provincia</label>
+      <select class="province-filter" id="province-filter" aria-label="Filtrar por provincia">
+        <option value="all">Todas las provincias</option>
+      </select>
+    </section>
+
+    <section class="route-panel" aria-label="Calcular ruta">
+      <div class="route-title"><strong>Cómo llegar</strong><span>Consulta distancia y tiempo hasta un lugar.</span></div>
+      <div class="route-inputs">
+        <label class="route-field">
+          <span>DESDE</span>
+          <input id="origin-address" type="text" autocomplete="street-address" placeholder="Tu ubicación o ciudad de salida">
+        </label>
+        <span class="swap-hint" aria-hidden="true">→</span>
+        <label class="route-field route-destination">
+          <span>HASTA</span>
+          <select id="destination" aria-label="Destino turístico"></select>
+        </label>
+        <button class="locate" id="locate" type="button">⌖ Usar mi ubicación</button>
+      </div>
+      <div class="route-controls">
+        <div class="modes" role="group" aria-label="Medio de transporte">
+          <button class="mode active" type="button" data-mode="driving">🚗 Auto</button>
+          <button class="mode" type="button" data-mode="walking">🚶 Caminando</button>
+          <button class="mode" type="button" data-mode="transit">🚌 Transporte público</button>
+        </div>
+        <button class="route-submit" id="calculate-route" type="button">Calcular cómo llegar ↗</button>
+      </div>
+      <p class="route-disclosure">Para calcular la ruta, se enviarán las coordenadas del origen y destino a servicios de mapas de OpenStreetMap. El transporte público se consulta en Google Maps.</p>
+      <p class="route-error" id="route-error" role="alert" hidden></p>
+      <div class="route-result" id="route-result" aria-live="polite" hidden>
+        <div class="route-metrics" id="route-metrics"></div>
+        <span class="route-provider" id="route-provider"></span>
+        <a class="route-link" id="route-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Ver indicaciones ↗</a>
+      </div>
+    </section>
+
+    <section class="workspace" aria-label="Mapa y lugares">
+      <div class="map-wrap">
+        <div id="map" role="application" aria-label="Mapa interactivo con lugares de Ecuador"></div>
+        <div class="map-badge"><span class="map-dot"></span> MAPA INTERACTIVO · ECUADOR</div>
+        <div class="map-credit">© OpenStreetMap contributors</div>
+      </div>
+      <aside class="sidebar">
+        <div class="sidebar-heading"><strong>Lugares en el mapa</strong><span class="count" id="count">0 lugares</span></div>
+        <div class="places-list" id="places-list" aria-live="polite"></div>
+      </aside>
+    </section>
+    <div class="status" id="status" role="status">Cargando lugares…</div>
+  </main>
+  <footer class="footer">Senderos Ecuador · Una guía para explorar a tu ritmo.</footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script>
+    (() => {
+      const labels = {
+        sitio_turistico: 'Naturaleza',
+        hotel: 'Hospedaje',
+        restaurante: 'Gastronomía'
+      };
+      const symbols = { sitio_turistico: '⌁', hotel: '⌂', restaurante: '◒' };
+      const map = L.map('map', { scrollWheelZoom: true, zoomControl: false }).setView([-1.45, -78.6], 6);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 18
+      }).addTo(map);
+      L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+      const markers = L.layerGroup().addTo(map);
+      const list = document.getElementById('places-list');
+      const count = document.getElementById('count');
+      const status = document.getElementById('status');
+      const search = document.getElementById('search');
+      const provinceFilter = document.getElementById('province-filter');
+      const originAddress = document.getElementById('origin-address');
+      const destinationSelect = document.getElementById('destination');
+      const locateButton = document.getElementById('locate');
+      const calculateButton = document.getElementById('calculate-route');
+      const routeError = document.getElementById('route-error');
+      const routeResult = document.getElementById('route-result');
+      const routeMetrics = document.getElementById('route-metrics');
+      const routeProvider = document.getElementById('route-provider');
+      const routeLink = document.getElementById('route-link');
+      let places = [];
+      let activeCategory = 'all';
+      let activePlaceId = null;
+      let selectedDestinationId = '';
+      let selectedMode = 'driving';
+      let originCoordinates = null;
+      let originLabel = '';
+      let originMarker = null;
+      let routeLine = null;
+      let markerById = new Map();
+
+      const normalizePlace = (place, index) => {
+        const coordinates = place.location && place.location.coordinates
+          ? [Number(place.location.coordinates[1]), Number(place.location.coordinates[0])]
+          : null;
+        if (!Array.isArray(coordinates) || coordinates.length !== 2 ||
+            !Number.isFinite(coordinates[0]) || !Number.isFinite(coordinates[1]) ||
+            Math.abs(coordinates[0]) > 90 || Math.abs(coordinates[1]) > 180) return null;
+        return {
+          id: String(place._id || `invalid-${index}`),
+          name: String(place.name || 'Lugar sin nombre'),
+          category: labels[place.category] ? place.category : 'sitio_turistico',
+          description: String(place.description || ''),
+          address: String(place.address || 'Ecuador'),
+          province: String(place.province || ''),
+          image: Array.isArray(place.images) ? String(place.images[0] || '') : '',
+          coordinates
+        };
+      };
+
+      const visiblePlaces = () => {
+        const query = search.value.trim().toLocaleLowerCase();
+        return places.filter((place) => {
+          const matchesCategory = activeCategory === 'all' || place.category === activeCategory;
+          const matchesProvince = provinceFilter.value === 'all' || place.province === provinceFilter.value;
+          const matchesQuery = !query ||
+            place.name.toLocaleLowerCase().includes(query) ||
+            place.address.toLocaleLowerCase().includes(query) ||
+            place.province.toLocaleLowerCase().includes(query);
+          return matchesCategory && matchesProvince && matchesQuery;
+        });
+      };
+
+      const selectPlace = (place, shouldZoom) => {
+        if (selectedDestinationId !== place.id) {
+          clearRoute();
+          routeResult.hidden = true;
+        }
+        activePlaceId = place.id;
+        selectedDestinationId = place.id;
+        destinationSelect.value = place.id;
+        list.querySelectorAll('.place-card').forEach((card) => {
+          card.classList.toggle('selected', card.dataset.id === place.id);
+        });
+        const marker = markerById.get(place.id);
+        if (marker) {
+          if (shouldZoom) map.flyTo(place.coordinates, Math.max(map.getZoom(), 10), { duration: 0.45 });
+          marker.openPopup();
+        }
+      };
+
+      const updateDestinations = () => {
+        const previousValue = selectedDestinationId || destinationSelect.value;
+        destinationSelect.replaceChildren();
+        for (const place of places) {
+          const option = document.createElement('option');
+          option.value = place.id;
+          option.textContent = `${place.name} · ${labels[place.category]}`;
+          destinationSelect.append(option);
+        }
+        if (!places.length) {
+          const option = document.createElement('option');
+          option.value = '';
+          option.textContent = 'No hay destinos registrados';
+          destinationSelect.append(option);
+        }
+        selectedDestinationId = places.some((place) => place.id === previousValue)
+          ? previousValue
+          : places[0]?.id || '';
+        destinationSelect.value = selectedDestinationId;
+      };
+
+      const updateProvinceOptions = () => {
+        const selected = provinceFilter.value;
+        const provinces = [...new Set(places.map((place) => place.province).filter(Boolean))]
+          .sort((a, b) => a.localeCompare(b, 'es'));
+        provinceFilter.replaceChildren(new Option('Todas las provincias', 'all'));
+        for (const province of provinces) provinceFilter.append(new Option(province, province));
+        provinceFilter.value = provinces.includes(selected) ? selected : 'all';
+      };
+
+      const render = () => {
+        updateProvinceOptions();
+        const filtered = visiblePlaces();
+        updateDestinations();
+        markers.clearLayers();
+        markerById = new Map();
+        list.replaceChildren();
+        count.textContent = `${filtered.length} ${filtered.length === 1 ? 'lugar' : 'lugares'}`;
+
+        if (!filtered.length) {
+          const empty = document.createElement('p');
+          empty.className = 'empty';
+          empty.textContent = places.length
+            ? 'No hay destinos que coincidan con esos filtros.'
+            : 'No hay destinos publicados con coordenadas verificadas.';
+          list.append(empty);
+        }
+
+        for (const place of filtered) {
+          const symbol = symbols[place.category] || '⌁';
+          const icon = L.divIcon({
+            className: 'pin-shell',
+            html: `<span class="pin ${place.category}"><span>${symbol}</span></span>`,
+            iconSize: [32, 38],
+            iconAnchor: [16, 34],
+            popupAnchor: [0, -30]
+          });
+          const marker = L.marker(place.coordinates, { icon }).addTo(markers);
+          const popup = document.createElement('div');
+          const title = document.createElement('div');
+          title.className = 'popup-title';
+          title.textContent = place.name;
+          const subtitle = document.createElement('div');
+          subtitle.className = 'popup-subtitle';
+          subtitle.textContent = `${labels[place.category]} · ${place.province ? `${place.province} · ` : ''}${place.address}`;
+          if (place.image) {
+            const image = document.createElement('img');
+            image.className = 'popup-image';
+            image.src = place.image;
+            image.alt = place.name;
+            image.loading = 'lazy';
+            popup.append(image);
+          }
+          const details = document.createElement('a');
+          details.className = 'popup-details';
+          details.href = `/descubrir.html?place=${encodeURIComponent(place.id)}`;
+          details.textContent = 'Ver detalles ↗';
+          popup.append(title, subtitle, details);
+          marker.bindPopup(popup);
+          marker.on('click', () => selectPlace(place, false));
+          markerById.set(place.id, marker);
+
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = `place-card${activePlaceId === place.id ? ' selected' : ''}`;
+          card.dataset.id = place.id;
+          card.dataset.category = place.category;
+          const placeSymbol = place.image ? document.createElement('img') : document.createElement('span');
+          placeSymbol.className = place.image ? 'place-thumbnail' : 'place-symbol';
+          if (place.image) {
+            placeSymbol.src = place.image;
+            placeSymbol.alt = '';
+            placeSymbol.loading = 'lazy';
+          } else {
+            placeSymbol.textContent = symbol;
+          }
+          const copy = document.createElement('span');
+          copy.className = 'place-copy';
+          const name = document.createElement('strong');
+          name.textContent = place.name;
+          const address = document.createElement('small');
+          address.textContent = place.address;
+          const category = document.createElement('span');
+          category.className = 'place-category';
+          category.textContent = `${labels[place.category]}${place.province ? ` · ${place.province}` : ''}`;
+          copy.append(name, address, category);
+          const arrow = document.createElement('span');
+          arrow.className = 'place-arrow';
+          arrow.setAttribute('aria-hidden', 'true');
+          arrow.textContent = '↗';
+          card.append(placeSymbol, copy, arrow);
+          card.addEventListener('click', () => selectPlace(place, true));
+          list.append(card);
+        }
+
+        if (filtered.length) {
+          const bounds = L.latLngBounds(filtered.map((place) => place.coordinates));
+          if (bounds.isValid()) map.fitBounds(bounds.pad(filtered.length === 1 ? 0.25 : 0.18), { maxZoom: 7 });
+        }
+      };
+
+      const selectDestinationFromUrl = () => {
+        const requested = new URLSearchParams(location.search).get('destination');
+        if (!requested) return;
+        const decoded = requested.toLocaleLowerCase();
+        const place = places.find((item) =>
+          item.id.toLocaleLowerCase() === decoded || item.name.toLocaleLowerCase() === decoded
+        );
+        if (!place) return;
+        selectedDestinationId = place.id;
+        destinationSelect.value = place.id;
+        activeCategory = 'all';
+        search.value = '';
+        document.querySelectorAll('.filter').forEach((filter) => {
+          filter.classList.toggle('active', filter.dataset.filter === 'all');
+        });
+        render();
+        selectPlace(place, true);
+      };
+
+      const setOrigin = (coordinates, label) => {
+        originCoordinates = coordinates;
+        originLabel = label;
+        originAddress.value = label;
+        if (originMarker) map.removeLayer(originMarker);
+        originMarker = L.circleMarker(coordinates, {
+          radius: 8,
+          color: '#fff',
+          weight: 3,
+          fillColor: '#315f7b',
+          fillOpacity: 1
+        }).addTo(map).bindPopup('Punto de partida');
+      };
+
+      const resolveOrigin = async () => {
+        if (originCoordinates && originAddress.value.trim() === originLabel) return originCoordinates;
+        const address = originAddress.value.trim();
+        if (!address) throw new Error('Indica una ciudad o usa el botón «Mi ubicación».');
+        if (originCoordinates && address === originCoordinates.label) return originCoordinates;
+
+        const url = new URL('https://nominatim.openstreetmap.org/search');
+        url.searchParams.set('format', 'jsonv2');
+        url.searchParams.set('limit', '1');
+        url.searchParams.set('q', address);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('No pudimos buscar el origen. Inténtalo nuevamente.');
+        const results = await response.json();
+        if (!results.length) throw new Error('No encontramos esa dirección. Prueba con una ciudad cercana.');
+        const coordinates = [Number(results[0].lat), Number(results[0].lon)];
+        setOrigin(coordinates, address);
+        return coordinates;
+      };
+
+      const formatDistance = (meters) => meters < 1000
+        ? `${Math.round(meters)} m`
+        : `${(meters / 1000).toFixed(1)} km`;
+
+      const formatDuration = (seconds) => {
+        const minutes = Math.max(1, Math.round(seconds / 60));
+        if (minutes < 60) return `${minutes} min`;
+        const hours = Math.floor(minutes / 60);
+        const remainder = minutes % 60;
+        return remainder ? `${hours} h ${remainder} min` : `${hours} h`;
+      };
+
+      const decodePolyline6 = (encoded) => {
+        let index = 0;
+        let latitude = 0;
+        let longitude = 0;
+        const coordinates = [];
+        while (index < encoded.length) {
+          const readDelta = () => {
+            let result = 0;
+            let shift = 0;
+            let byte;
+            do {
+              if (index >= encoded.length) throw new Error('La geometría de la ruta está incompleta.');
+              byte = encoded.charCodeAt(index++) - 63;
+              result |= (byte & 0x1f) << shift;
+              shift += 5;
+            } while (byte >= 0x20);
+            return result & 1 ? ~(result >> 1) : result >> 1;
+          };
+          latitude += readDelta();
+          longitude += readDelta();
+          coordinates.push([longitude / 1e6, latitude / 1e6]);
+        }
+        return { type: 'LineString', coordinates };
+      };
+
+      const clearRoute = () => {
+        if (routeLine) map.removeLayer(routeLine);
+        routeLine = null;
+      };
+
+      const showRouteMetrics = (distanceMeters, durationSeconds, provider, geometry) => {
+        routeMetrics.replaceChildren();
+        for (const [value, label] of [
+          [formatDistance(distanceMeters), selectedMode === 'walking' ? 'distancia a pie' : 'distancia por carretera'],
+          [formatDuration(durationSeconds), 'tiempo estimado']
+        ]) {
+          const metric = document.createElement('div');
+          metric.className = 'route-metric';
+          const strong = document.createElement('strong');
+          strong.textContent = value;
+          const caption = document.createElement('span');
+          caption.textContent = label;
+          metric.append(strong, caption);
+          routeMetrics.append(metric);
+        }
+        routeProvider.textContent = provider;
+        routeLink.hidden = true;
+        routeResult.hidden = false;
+        if (geometry?.coordinates?.length) {
+          clearRoute();
+          routeLine = L.geoJSON(geometry, {
+            style: { color: '#315f7b', weight: 5, opacity: 0.85, dashArray: selectedMode === 'walking' ? '8 7' : null }
+          }).addTo(map);
+          map.fitBounds(routeLine.getBounds().pad(0.13));
+        }
+      };
+
+      const calculateRoute = async () => {
+        routeError.hidden = true;
+        routeError.textContent = '';
+        routeResult.hidden = true;
+        routeLink.hidden = true;
+        const destination = places.find((place) => place.id === destinationSelect.value);
+        if (!destination) {
+          routeError.textContent = 'Selecciona un lugar de destino.';
+          routeError.hidden = false;
+          return;
+        }
+
+        calculateButton.disabled = true;
+        calculateButton.textContent = 'Calculando ruta…';
+        try {
+          const origin = await resolveOrigin();
+          if (selectedMode === 'transit') {
+            clearRoute();
+            const googleMaps = new URL('https://www.google.com/maps/dir/');
+            googleMaps.searchParams.set('api', '1');
+            googleMaps.searchParams.set('origin', `${origin[0]},${origin[1]}`);
+            googleMaps.searchParams.set('destination', `${destination.coordinates[0]},${destination.coordinates[1]}`);
+            googleMaps.searchParams.set('travelmode', 'transit');
+            routeMetrics.replaceChildren();
+            const message = document.createElement('div');
+            message.className = 'route-metric';
+            const title = document.createElement('strong');
+            title.textContent = 'Autobús y transporte público';
+            const caption = document.createElement('span');
+            caption.textContent = 'Consulta horarios, transbordos, distancia y tiempo disponibles para este trayecto.';
+            message.append(title, caption);
+            routeMetrics.append(message);
+            routeProvider.textContent = 'Google Maps · transporte público';
+            routeLink.href = googleMaps.toString();
+            routeLink.textContent = 'Ver opciones de transporte ↗';
+            routeLink.hidden = false;
+            routeResult.hidden = false;
+            return;
+          }
+
+          let distance;
+          let duration;
+          let geometry;
+          if (selectedMode === 'driving') {
+            const coordinates = `${origin[1]},${origin[0]};${destination.coordinates[1]},${destination.coordinates[0]}`;
+            const url = `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson&steps=false`;
+            const response = await fetch(url);
+            const data = await response.json();
+            if (!response.ok || data.code !== 'Ok' || !data.routes?.length) {
+              throw new Error('No encontramos una ruta en auto entre esos lugares.');
+            }
+            ({ distance, duration, geometry } = data.routes[0]);
+          } else {
+            const request = {
+              locations: [
+                { lat: origin[0], lon: origin[1] },
+                { lat: destination.coordinates[0], lon: destination.coordinates[1] }
+              ],
+              costing: 'pedestrian',
+              units: 'kilometers',
+              shape_format: 'geojson'
+            };
+            const url = `https://valhalla1.openstreetmap.de/route?json=${encodeURIComponent(JSON.stringify(request))}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            if (!response.ok || data.error || !data.trip?.legs?.length) {
+              throw new Error('No encontramos una ruta peatonal para este trayecto.');
+            }
+            const summary = data.trip.legs[0].summary;
+            distance = summary.length * 1000;
+            duration = summary.time;
+            geometry = typeof data.trip.legs[0].shape === 'string'
+              ? decodePolyline6(data.trip.legs[0].shape)
+              : data.trip.legs[0].shape;
+          }
+          showRouteMetrics(distance, duration, `${selectedMode === 'driving' ? 'OpenStreetMap · OSRM' : 'OpenStreetMap · Valhalla'} · tiempo estimado, sin tráfico`, geometry);
+        } catch (error) {
+          routeError.textContent = error instanceof Error ? error.message : 'No pudimos calcular la ruta. Comprueba tu conexión e inténtalo de nuevo.';
+          routeError.hidden = false;
+        } finally {
+          calculateButton.disabled = false;
+          calculateButton.textContent = 'Calcular cómo llegar ↗';
+        }
+      };
+
+      document.querySelectorAll('.filter').forEach((button) => {
+        button.addEventListener('click', () => {
+          activeCategory = button.dataset.filter || 'all';
+          document.querySelectorAll('.filter').forEach((filter) => filter.classList.toggle('active', filter === button));
+          render();
+        });
+      });
+      search.addEventListener('input', render);
+      provinceFilter.addEventListener('change', render);
+      destinationSelect.addEventListener('change', () => {
+        selectedDestinationId = destinationSelect.value;
+        const place = places.find((item) => item.id === selectedDestinationId);
+        if (place) {
+          clearRoute();
+          routeResult.hidden = true;
+          selectPlace(place, true);
+        }
+      });
+      originAddress.addEventListener('input', () => {
+        if (originAddress.value.trim() !== originLabel) {
+          originCoordinates = null;
+          originLabel = '';
+          if (originMarker) map.removeLayer(originMarker);
+          originMarker = null;
+          clearRoute();
+          routeResult.hidden = true;
+        }
+      });
+      document.querySelectorAll('.mode').forEach((button) => {
+        button.addEventListener('click', () => {
+          selectedMode = button.dataset.mode || 'driving';
+          document.querySelectorAll('.mode').forEach((mode) => mode.classList.toggle('active', mode === button));
+          clearRoute();
+          routeResult.hidden = true;
+          routeError.hidden = true;
+          routeLink.hidden = true;
+        });
+      });
+      locateButton.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+          routeError.textContent = 'Este navegador no permite obtener tu ubicación. Escribe una ciudad de salida.';
+          routeError.hidden = false;
+          return;
+        }
+        locateButton.disabled = true;
+        locateButton.textContent = 'Buscando ubicación…';
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setOrigin([position.coords.latitude, position.coords.longitude], 'Mi ubicación actual');
+            clearRoute();
+            routeResult.hidden = true;
+            routeError.hidden = true;
+            locateButton.disabled = false;
+            locateButton.textContent = '⌖ Usar mi ubicación';
+            map.setView(originCoordinates, 12);
+            originMarker.openPopup();
+          },
+          (error) => {
+            routeError.textContent = error.code === error.PERMISSION_DENIED
+              ? 'No tenemos permiso para ver tu ubicación. Escribe una ciudad de salida.'
+              : 'No pudimos obtener tu ubicación. Inténtalo otra vez o escribe una ciudad.';
+            routeError.hidden = false;
+            locateButton.disabled = false;
+            locateButton.textContent = '⌖ Usar mi ubicación';
+          },
+          { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+        );
+      });
+      calculateButton.addEventListener('click', calculateRoute);
+
+      render();
+      selectDestinationFromUrl();
+      fetch('http://localhost:3000/api/places?limit=100')
+        .then((response) => {
+          if (!response.ok) throw new Error(`API respondió ${response.status}`);
+          return response.json();
+        })
+        .then((result) => {
+          places = Array.isArray(result.items) ? result.items.map(normalizePlace).filter(Boolean) : [];
+          render();
+          selectDestinationFromUrl();
+          status.textContent = places.length
+            ? 'Lugares cargados desde el catálogo publicado.'
+            : 'El catálogo no tiene destinos con coordenadas registradas.';
+        })
+        .catch(() => {
+          places = [];
+          render();
+          status.textContent = 'No se pudo conectar con el catálogo de lugares.';
+        });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#193329">
+  <meta name="description" content="Prepara tu visita a los destinos de Ecuador con recomendaciones de ropa, equipo, dificultad y guías locales.">
+  <title>Guías y equipo — Senderos Ecuador</title>
+  <link rel="stylesheet" href="/secciones.css">
+</head>
+<body data-page="guides">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Senderos, ir al inicio">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 42 42" fill="none"><path d="M5 31.5 16.4 12l6.3 10.1 4.1-6.3L37 31.5H5Z" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"></path><path d="m13.3 31.5 7.3-11.2 7.1 11.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg></span>
+      <span class="brand-copy"><strong>senderos</strong><small>ECUADOR · A TU RITMO</small></span>
+    </a>
+    <nav class="navigation" aria-label="Navegación">
+      <a href="/">Inicio</a><a href="/descubrir.html">Descubrir</a><a href="/senderos.html">Senderos</a><a href="/guias.html" aria-current="page">Guías y equipo</a><a href="/mapa.html">Mapa</a>
+    </nav>
+    <a class="header-back" href="/">← Inicio</a>
+  </header>
+  <main>
+    <section class="page-hero" style="--hero-image: url('https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=1900&q=85')">
+      <div class="page-hero-content"><div class="eyebrow">PREPARA CADA AVENTURA CON CALMA</div><h1>El equipo correcto.<br><em>Un camino mejor.</em></h1><p>Elige tu destino y revisa qué ropa, calzado y equipo básico podrías necesitar. Las recomendaciones cambian según el clima y la ruta.</p></div>
+    </section>
+    <section class="page-content">
+      <div class="content-intro"><div><div class="eyebrow">ROPA · CALZADO · SEGURIDAD</div><h2>¿A dónde vas a caminar?</h2></div><p>Consulta una guía general para el lugar seleccionado y revisa si la ruta requiere acompañamiento local.</p></div>
+      <div class="guide-selector">
+        <label for="gear-destination">Selecciona un destino
+          <select id="gear-destination"></select>
+        </label>
+        <a class="small-link primary" id="gear-map-link" href="/mapa.html">Ver ubicación en el mapa ↗</a>
+      </div>
+      <div class="gear-layout">
+        <section class="gear-main" aria-live="polite">
+          <div class="gear-place"><img id="gear-image" src="" alt=""><div><span id="gear-category"></span><h2 id="gear-name"></h2></div></div>
+          <div class="gear-section-title">VESTIMENTA Y EQUIPO RECOMENDADO</div>
+          <div class="gear-list" id="gear-list"></div>
+          <div class="guide-callout"><strong id="guide-advice-title"></strong><p id="guide-advice"></p></div>
+        </section>
+        <aside class="guide-main">
+          <div class="eyebrow">¿CONVIENE CONTRATAR UN GUÍA?</div>
+          <h2>Conoce el terreno antes de salir.</h2>
+          <p id="guide-summary"></p>
+          <ul class="guide-checklist" id="guide-checklist"></ul>
+          <a class="small-link primary" id="local-guides-link" href="#" target="_blank" rel="noopener noreferrer">Buscar guías locales ↗</a>
+          <div class="notice">Senderos ofrece recomendaciones generales, no un pronóstico meteorológico ni una evaluación en tiempo real del camino. Confirma el clima, cierres, permisos, seguridad y equipo con autoridades o guías locales antes de viajar.</div>
+        </aside>
+      </div>
+      <p class="status">La disponibilidad de guías y servicios se confirma directamente con proveedores locales. Senderos todavía no reserva ni certifica prestadores.</p>
+    </section>
+  </main>
+  <footer class="page-footer"><span>Senderos Ecuador · Prepárate y disfruta con responsabilidad.</span><a href="/senderos.html">Volver a los senderos ↗</a></footer>
+  <script src="/secciones.js" defer></script>
+</body>
+</html>

@@ -1,59 +1,29 @@
-# Fronent
+# Senderos · descubre Ecuador a tu ritmo
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.7.
+Interfaz web adaptable para explorar sitios turísticos, hospedajes y restaurantes; consultar ubicaciones en el mapa y guardar caminatas en una cuenta.
 
-## Development server
+## Iniciar en desarrollo
 
-To start a local development server, run:
+1. Inicia MongoDB y la API siguiendo las instrucciones de [`../backend/README.md`](../backend/README.md).
+2. Desde esta carpeta, instala las dependencias con `npm install`.
+3. Ejecuta `npm start` y abre `http://localhost:4200`.
 
-```bash
-ng serve
-```
+El cliente consume la API en `http://localhost:3000/api`. Configura `CORS_ORIGIN` en el backend para el origen del frontend si usas una dirección o puerto distinto.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+El mapa usa OpenStreetMap y Leaflet; el mapa base y las fotografías requieren conexión a internet. Para calcular una ruta, el origen y el destino se envían a los servicios públicos de rutas de OpenStreetMap. Las búsquedas de direcciones se envían a Nominatim; las indicaciones de transporte público se consultan en Google Maps. La ubicación del navegador solo se solicita cuando la persona pulsa «Usar mi ubicación» y no se envía al servicio de rutas hasta que pulsa «Calcular cómo llegar». El mapa solo muestra lugares publicados con coordenadas GeoJSON válidas; si la API no está disponible, informa del error en lugar de mostrar ubicaciones de demostración.
 
-## Code scaffolding
+## Funcionalidades
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- Inicio con información de destinos y senderos. Las páginas HTML independientes son `http://localhost:4200/descubrir.html`, `/senderos.html`, `/guias.html` y `/mapa.html`.
+- Descubrir consulta el catálogo del backend con búsqueda, filtros por categoría/provincia/dificultad, ordenamiento, detalle y favoritos por usuario. Senderos solo muestra destinos con metadatos publicados; no presenta distancias o trazados no verificados.
+- Guías y equipo adapta consejos generales de vestimenta, calzado y preparación al destino elegido. También ofrece una búsqueda de guías locales; Senderos no certifica proveedores ni confirma disponibilidad.
+- Cada lugar permite abrir el mapa con ese destino seleccionado. Calcula distancia y tiempo estimados en auto o a pie; la opción de transporte público abre Google Maps para consultar horarios y transbordos disponibles.
+- Registro e inicio de sesión; el token se usa en las peticiones protegidas. Los favoritos se guardan en la cuenta.
+- Planificador con fecha, duración, dificultad, participantes y preferencias; permite editar, eliminar y cambiar el estado de las caminatas propias.
+- Formulario para que un administrador publique lugares en el catálogo.
+- Diseño adaptable a móviles y escritorio.
 
-```bash
-ng generate component component-name
-```
+## Validar
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- `npm run build`
+- `npm test -- --watch=false`
